@@ -44,6 +44,17 @@ custo_kg = {c: st.sidebar.number_input(NOMES_CATEGORIA[c], value=float(CUSTO_KG[
 limite = st.sidebar.slider("Alerta de custo alto: margem abaixo de", 0.40, 0.90, float(LIMITE_MARGEM_ALERTA), 0.01)
 meta_fila = st.sidebar.number_input("Meta de fila na churrasqueira (min)", value=float(META_FILA_CHURRASQUEIRA_MIN), step=0.5)
 
+st.sidebar.divider()
+st.sidebar.header("IA de visão")
+chave_ia = st.sidebar.text_input(
+    "Chave da API do Gemini", value=os.getenv("GEMINI_API_KEY", ""), type="password",
+    help="Chave gratuita do Google AI Studio. Fica só na memória desta sessão, não é salva em arquivo.",
+).strip()
+if chave_ia:
+    st.sidebar.success("IA de visão ligada")
+else:
+    st.sidebar.info("Sem chave: a análise ao vivo fica simulada")
+
 df = aplicar_margem(dados, custo_kg=custo_kg, preco_kg=preco_kg, limite=limite)
 
 # ---------------- Cabeçalho ----------------
@@ -53,7 +64,7 @@ if simulado:
     st.warning("Dados SIMULADOS com os parâmetros informados pela diretoria (ver README). "
                "Com a câmera na balança, estes números passam a ser reais.")
 
-aba_gerente, aba_galeria, aba_prato = st.tabs(["Visão do gerente", "Galeria de pratos analisados", "Analisar um prato"])
+aba_gerente, aba_prato, aba_galeria = st.tabs(["Visão do gerente", "Câmera na balança (ao vivo)", "Galeria de pratos analisados"])
 
 # ---------------- Aba 1: gerente ----------------
 with aba_gerente:
@@ -126,8 +137,8 @@ with aba_galeria:
         melhor = max(pratos, key=lambda p: p["margem"]["margem_pct"])
         g1, g2, g3 = st.columns(3)
         g1.metric("Margem média da galeria", f"{media * 100:.1f}%")
-        g2.metric("Prato mais caro para a casa", f"{pior['margem']['margem_pct'] * 100:.1f}%", pior["titulo"].split(" - ")[0], delta_color="off")
-        g3.metric("Prato mais rentável", f"{melhor['margem']['margem_pct'] * 100:.1f}%", melhor["titulo"].split(" - ")[0], delta_color="off")
+        g2.metric(f"Menor margem ({pior['titulo'].split(' - ')[0]})", f"{pior['margem']['margem_pct'] * 100:.1f}%")
+        g3.metric(f"Maior margem ({melhor['titulo'].split(' - ')[0]})", f"{melhor['margem']['margem_pct'] * 100:.1f}%")
 
         colunas = st.columns(3)
         for i, p in enumerate(pratos):
@@ -141,39 +152,79 @@ with aba_galeria:
                     st.metric("Margem", f"{m['margem_pct'] * 100:.1f}%", f"R$ {m['margem_rs']:.2f} por prato")
                     if m["margem_pct"] < limite:
                         st.error("Custo alto")
+                    if p.get("itens"):
+                        st.caption("Itens: " + ", ".join(p["itens"]))
                     st.caption(p["observacao"])
 
-# ---------------- Aba 3: analisar prato ----------------
+# ---------------- Aba 2: câmera na balança (ao vivo) ----------------
+if "historico" not in st.session_state:
+    st.session_state["historico"] = []
+
 with aba_prato:
-    st.write("Envie a foto do prato na balança e informe o peso. A IA estima o mix e o painel calcula a margem.")
-    if not os.getenv("ANTHROPIC_API_KEY"):
-        st.info("Sem ANTHROPIC_API_KEY configurada: a estimativa será SIMULADA (veja o README para ligar a IA de visão).")
+    st.write("Simula a câmera instalada sobre a balança: tire a foto do prato (ou envie uma), informe o peso "
+             "e a IA identifica o que foi servido. O painel calcula na hora a margem daquele prato.")
+    if not chave_ia:
+        st.info("Sem chave da IA na barra lateral: a estimativa será SIMULADA (não corresponde à foto).")
 
-    arquivo = st.file_uploader("Foto do prato", type=["jpg", "jpeg", "png"])
-    peso = st.number_input("Peso do prato (g)", min_value=100, max_value=1500, value=550, step=10)
+    origem = st.radio("Origem da imagem", ["Usar a câmera", "Enviar foto"], horizontal=True)
+    if origem == "Usar a câmera":
+        arquivo = st.camera_input("Aponte a câmera para o prato (vista de cima)")
+    else:
+        arquivo = st.file_uploader("Foto do prato", type=["jpg", "jpeg", "png"])
+    peso = st.number_input("Peso na balança (g)", min_value=100, max_value=1500, value=550, step=10)
 
-    if st.button("Analisar prato", type="primary"):
-        imagem = arquivo.getvalue() if arquivo else None
-        tipo = arquivo.type if arquivo else "image/jpeg"
-        resultado = analisar_prato(peso, imagem, tipo, custo_kg=custo_kg, preco_kg=preco_kg)
+    if st.button("Analisar prato", type="primary", disabled=arquivo is None):
+        with st.spinner("Analisando o prato..."):
+            resultado = analisar_prato(peso, arquivo.getvalue(), arquivo.type or "image/jpeg",
+                                       custo_kg=custo_kg, preco_kg=preco_kg, chave=chave_ia)
 
-        col_img, col_res = st.columns(2)
-        if arquivo:
-            col_img.image(arquivo, caption="Prato analisado", width="stretch")
-
-        mix = pd.Series({NOMES_CATEGORIA[c]: resultado["mix"][c] * 100 for c in CATEGORIAS})
-        col_res.caption(f"Mix estimado (%) - fonte: {resultado['fonte']}")
-        col_res.bar_chart(mix)
-
-        m = resultado["margem"]
-        a, b, c = st.columns(3)
-        a.metric("Receita", f"R$ {m['receita']:.2f}")
-        b.metric("Custo estimado", f"R$ {m['custo']:.2f}")
-        c.metric("Margem", f"{m['margem_pct'] * 100:.1f}%", f"R$ {m['margem_rs']:.2f}")
-
-        if m["margem_pct"] < limite:
-            st.error("Prato de custo alto: muita proporção de itens caros para o peso cobrado.")
+        if resultado["nao_e_prato"]:
+            st.warning(resultado["erro_ia"])
         else:
-            st.success("Prato dentro da margem esperada.")
-        if resultado["observacao"]:
-            st.caption(resultado["observacao"])
+            if resultado["erro_ia"]:
+                st.error(resultado["erro_ia"])
+            col_img, col_res = st.columns(2)
+            col_img.image(arquivo, caption=f"Prato na balança - {peso} g", width="stretch")
+            with col_res:
+                if resultado["ia_real"]:
+                    st.success(f"Analisado por {resultado['fonte']}")
+                else:
+                    st.warning("Resultado SIMULADO")
+                st.bar_chart(pd.Series({NOMES_CATEGORIA[c]: resultado["mix"][c] * 100 for c in CATEGORIAS}),
+                             height=220, y_label="% do prato")
+                if resultado["itens"]:
+                    st.caption("Itens identificados: " + ", ".join(resultado["itens"]))
+                if resultado["observacao"]:
+                    st.caption(resultado["observacao"])
+
+            m = resultado["margem"]
+            a, b, c = st.columns(3)
+            a.metric("Valor cobrado", f"R$ {m['receita']:.2f}")
+            b.metric("Custo estimado do alimento", f"R$ {m['custo']:.2f}")
+            c.metric("Margem", f"{m['margem_pct'] * 100:.1f}%", f"R$ {m['margem_rs']:.2f}")
+            if m["margem_pct"] < limite:
+                st.error("Prato de custo alto: proporção grande de itens caros para o peso cobrado.")
+            else:
+                st.success("Prato dentro da margem esperada.")
+
+            st.session_state["historico"].append({
+                "hora": pd.Timestamp.now().strftime("%H:%M:%S"),
+                "peso_g": peso,
+                **{NOMES_CATEGORIA[c]: round(resultado["mix"][c] * 100) for c in CATEGORIAS},
+                "margem_%": round(m["margem_pct"] * 100, 1),
+                "custo_alto": m["margem_pct"] < limite,
+                "fonte": "IA" if resultado["ia_real"] else "simulado",
+            })
+
+    historico = st.session_state["historico"]
+    if historico:
+        st.subheader(f"Pratos registrados nesta sessão ({len(historico)})")
+        tabela = pd.DataFrame(historico)
+        h1, h2, h3 = st.columns(3)
+        h1.metric("Margem média", f"{tabela['margem_%'].mean():.1f}%")
+        h2.metric("Peso médio", f"{tabela['peso_g'].mean():.0f} g")
+        h3.metric("Pratos de custo alto", f"{int(tabela['custo_alto'].sum())}")
+        st.dataframe(tabela.iloc[::-1], width="stretch", hide_index=True)
+        if st.button("Limpar registros"):
+            st.session_state["historico"] = []
+            st.rerun()
