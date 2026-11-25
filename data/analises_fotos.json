@@ -1,0 +1,65 @@
+[
+  {
+    "arquivo": "fotos/prato_01.jpg",
+    "titulo": "Prato 1 - Carnes e farofa",
+    "peso_g": 700,
+    "mix": {"carne": 0.62, "guarnicao": 0.33, "salada": 0.00, "outros": 0.05},
+    "observacao": "Linguiça e fatias de carne cobrem mais da metade do prato; o restante é farofa, arroz e maionese de batata."
+  },
+  {
+    "arquivo": "fotos/prato_02.jpg",
+    "titulo": "Prato 2 - Macarrão, arroz e feijão",
+    "peso_g": 450,
+    "mix": {"carne": 0.00, "guarnicao": 0.78, "salada": 0.20, "outros": 0.02},
+    "observacao": "Sem proteína. Predominam macarrão, arroz e feijão, com um pouco de repolho e tomate."
+  },
+  {
+    "arquivo": "fotos/prato_03.jpg",
+    "titulo": "Prato 3 - Salada",
+    "peso_g": 250,
+    "mix": {"carne": 0.00, "guarnicao": 0.00, "salada": 0.97, "outros": 0.03},
+    "observacao": "Prato quase só de folhas, tomate, pepino e cenoura; filete de azeite e gergelim."
+  },
+  {
+    "arquivo": "fotos/prato_04.jpg",
+    "titulo": "Prato 4 - Equilibrado com linguiça e picanha",
+    "peso_g": 550,
+    "mix": {"carne": 0.35, "guarnicao": 0.30, "salada": 0.30, "outros": 0.05},
+    "observacao": "Carnes ocupam cerca de um terço; arroz e farofa de um lado, alface, vinagrete e salada de repolho do outro."
+  },
+  {
+    "arquivo": "fotos/prato_05.jpg",
+    "titulo": "Prato 5 - Bife, arroz, feijão e salada",
+    "peso_g": 500,
+    "mix": {"carne": 0.35, "guarnicao": 0.40, "salada": 0.20, "outros": 0.05},
+    "observacao": "Bife grande com cebola; arroz e feijão são a maior parte; salada picada no topo."
+  },
+  {
+    "arquivo": "fotos/prato_06.jpg",
+    "titulo": "Prato 6 - Prato feito com fritas e ovo",
+    "peso_g": 650,
+    "mix": {"carne": 0.25, "guarnicao": 0.40, "salada": 0.10, "outros": 0.25},
+    "observacao": "Batata frita e ovo frito pesam na categoria outros; carne em porção moderada."
+  },
+  {
+    "arquivo": "fotos/prato_07.jpg",
+    "titulo": "Prato 7 - Estilo feijoada",
+    "peso_g": 600,
+    "mix": {"carne": 0.30, "guarnicao": 0.35, "salada": 0.15, "outros": 0.20},
+    "observacao": "Carne, linguiça e bacon; feijão, batata e farofa; couve e vinagrete; banana frita e laranja em outros."
+  },
+  {
+    "arquivo": "fotos/prato_08.jpg",
+    "titulo": "Prato 8 - Variado com frango e carne",
+    "peso_g": 500,
+    "mix": {"carne": 0.30, "guarnicao": 0.30, "salada": 0.25, "outros": 0.15},
+    "observacao": "Tiras de carne, frango grelhado e carne moída; arroz, feijão e farofa; saladas variadas; chips e manga em outros."
+  },
+  {
+    "arquivo": "fotos/prato_09.jpg",
+    "titulo": "Prato 9 - Feijoada com frango e picanha",
+    "peso_g": 650,
+    "mix": {"carne": 0.35, "guarnicao": 0.42, "salada": 0.06, "outros": 0.17},
+    "observacao": "Frango assado, picanha e carnes no feijão; arroz, feijão e farofa; mandioca frita em outros; pouco vinagrete."
+  }
+]
