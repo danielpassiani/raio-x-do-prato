@@ -46,10 +46,24 @@ meta_fila = st.sidebar.number_input("Meta de fila na churrasqueira (min)", value
 
 st.sidebar.divider()
 st.sidebar.header("IA de visão")
-chave_ia = st.sidebar.text_input(
-    "Chave da API do Gemini", value=os.getenv("GEMINI_API_KEY", ""), type="password",
+def chave_do_servidor():
+    """Chave definida no servidor (variável de ambiente ou Secrets do Streamlit Cloud). Nunca vai para a tela."""
+    chave = os.getenv("GEMINI_API_KEY", "")
+    if not chave:
+        try:
+            chave = st.secrets.get("GEMINI_API_KEY", "")
+        except Exception:
+            chave = ""
+    return chave.strip()
+
+
+chave_servidor = chave_do_servidor()
+chave_digitada = st.sidebar.text_input(
+    "Chave da API do Gemini", type="password",
+    placeholder="já configurada no servidor" if chave_servidor else "cole a chave aqui",
     help="Chave gratuita do Google AI Studio. Fica só na memória desta sessão, não é salva em arquivo.",
 ).strip()
+chave_ia = chave_digitada or chave_servidor
 if chave_ia:
     st.sidebar.success("IA de visão ligada")
 else:
