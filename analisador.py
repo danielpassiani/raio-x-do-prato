@@ -23,7 +23,7 @@ BASE_URL = "https://generativelanguage.googleapis.com/v1beta"
 
 # Modelos tentados, em ordem. O primeiro que responder fica guardado para as próximas chamadas.
 MODELOS_PREFERIDOS = [
-    m for m in [os.getenv("RAIOX_MODELO_GEMINI"), "gemini-3.8-flash", "gemini-2.5-flash", "gemini-flash-latest"] if m
+    m for m in [os.getenv("RAIOX_MODELO_GEMINI"), "gemini-flash-latest", "gemini-3.8-flash", "gemini-2.5-flash"] if m
 ]
 
 PROMPT = (

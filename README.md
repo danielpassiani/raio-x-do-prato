@@ -4,7 +4,13 @@
 
 Protótipo do Hackathon FMU para o **Bovinu's Grill & Beer (Rua Augusta)**, almoço por quilo.
 
-**Equipe:** Daniel Passiani, Pedro Torres e Kauan Lucindo | **Curso:** Análise e Desenvolvimento de Sistemas, FMU
+**Grupo Hypervisor:** Daniel Passiani, Pedro Torres e Kauan Lucindo | **Curso:** Análise e Desenvolvimento de Sistemas, FMU
+
+## ▶️ Vídeo da solução
+
+**[Assista no YouTube: Raio-X do Prato | Grupo Hypervisor](https://youtu.be/XKMC69OZykQ)**
+
+[![Vídeo da solução](https://img.youtube.com/vi/XKMC69OZykQ/hqdefault.jpg)](https://youtu.be/XKMC69OZykQ)
 
 ![Visão do gerente](docs/painel_gerente.jpg)
 

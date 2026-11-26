@@ -53,11 +53,22 @@ def main():
         return
 
     atualizados = 0
-    for prato in pratos:
-        try:
-            resultado, modelo = analisar_com_gemini(open(os.path.join("data", prato["arquivo"]), "rb").read(), "image/jpeg", chave)
-        except ErroIA as erro:
-            print(f"\n{prato['titulo']}: falhou ({erro}). Mantendo a análise anterior.")
+    for n, prato in enumerate(pratos):
+        if n:
+            time.sleep(15)  # pausa entre fotos para respeitar o limite do plano gratuito
+        resultado = None
+        for tentativa in range(3):
+            try:
+                resultado, modelo = analisar_com_gemini(open(os.path.join("data", prato["arquivo"]), "rb").read(), "image/jpeg", chave)
+                break
+            except ErroIA as erro:
+                if "Limite" in str(erro) and tentativa < 2:
+                    print(f"\n{prato['titulo']}: limite da API atingido, aguardando 60 s para tentar de novo...")
+                    time.sleep(60)
+                    continue
+                print(f"\n{prato['titulo']}: falhou ({erro}). Mantendo a análise anterior.")
+                break
+        if resultado is None:
             continue
         mostrar(prato["titulo"], resultado, modelo)
         prato["mix"] = {c: round(v, 3) for c, v in resultado["mix"].items()}
@@ -65,10 +76,8 @@ def main():
         prato["observacao"] = resultado["observacao"] or prato["observacao"]
         prato["modelo"] = modelo
         atualizados += 1
-        time.sleep(2)  # respeita o limite do plano gratuito
-
-    with open(ARQUIVO, "w", encoding="utf-8") as f:
-        json.dump(pratos, f, ensure_ascii=False, indent=2)
+        with open(ARQUIVO, "w", encoding="utf-8") as f:  # salva a cada prato, para não perder o progresso
+            json.dump(pratos, f, ensure_ascii=False, indent=2)
     print(f"\n{atualizados} de {len(pratos)} pratos atualizados em {ARQUIVO}.")
     if atualizados:
         print("Suba o arquivo data/analises_fotos.json atualizado para o GitHub.")
