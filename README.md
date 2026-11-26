@@ -6,11 +6,13 @@ Protótipo do Hackathon FMU para o **Bovinu's Grill & Beer (Rua Augusta)**, almo
 
 **Grupo Hypervisor:** Daniel Passiani, Pedro Torres e Kauan Lucindo | **Curso:** Análise e Desenvolvimento de Sistemas, FMU
 
-## ▶️ Vídeo da solução
+| | |
+|---|---|
+| ▶️ **Vídeo da solução (até 2 min)** | [youtube.com/watch?v=89GV5QIo0FI](https://www.youtube.com/watch?v=89GV5QIo0FI) |
+| 📊 **Apresentação (5 slides)** | [docs/apresentacao.pdf](docs/apresentacao.pdf) |
+| 🧭 **Diagrama da solução** | [docs/fluxo.png](docs/fluxo.png) |
 
-**[Assista no YouTube: Raio-X do Prato | Grupo Hypervisor](https://youtu.be/XKMC69OZykQ)**
-
-[![Vídeo da solução](https://img.youtube.com/vi/XKMC69OZykQ/hqdefault.jpg)](https://youtu.be/XKMC69OZykQ)
+[![Vídeo da solução](https://img.youtube.com/vi/89GV5QIo0FI/hqdefault.jpg)](https://www.youtube.com/watch?v=89GV5QIo0FI)
 
 ![Visão do gerente](docs/painel_gerente.jpg)
 
@@ -42,6 +44,10 @@ Frase-guia do desafio: *"que dados o cliente demonstra, mas não conta?"* O prat
 | 4. Tempo por estação | Mostra quanto tempo o cliente leva em saladas, quentes, churrasqueira e balança |
 | 5. Painel do gerente | Margem por hora, gargalos e alertas com sugestão de ação |
 
+### Diagrama da solução
+
+![Diagrama: da foto ao painel](docs/fluxo.png)
+
 **Respeita as restrições da diretoria:** não toca cozinha, compras, estoque nem pagamento; mantém o modelo por quilo; não adiciona catraca nem nada que afaste o contato humano com o cliente.
 
 ### As três telas do painel
@@ -52,7 +58,17 @@ Frase-guia do desafio: *"que dados o cliente demonstra, mas não conta?"* O prat
 
 ![Galeria](docs/galeria.jpg)
 
-## 3. Como executar
+## 3. Como desenvolvemos
+
+1. **Entender o desafio:** a partir da apresentação da diretoria, separamos as dores, os números (600 clientes/dia, R$ 119/kg, fila de até 4 min) e o que estava fora do escopo.
+2. **Escolher a ideia em grupo:** levantamos quatro opções (câmera no prato, contagem de filas, tempo pela comanda e uma combinação) e escolhemos a câmera no prato somada ao tempo por estação.
+3. **Descartar o sensor na entrada:** exigiria instalar hardware e poderia criar fila no início do buffet, contra o pedido de manter o contato humano. Ficou no roadmap.
+4. **Simular um dia de operação:** sem dados reais, geramos 600 clientes com o pico das 12:10 às 13:20 (`simulador.py`).
+5. **Construir o painel:** Python + Streamlit, com cálculo de margem (`custos.py`), gráficos de tempo por estação e alertas (`app.py`).
+6. **Ligar a IA de visão:** integração com a API do Google Gemini (`analisador.py`), testada com a câmera ao vivo. No primeiro teste, a IA reconheceu carne bovina, linguiça, maionese, farofa e arroz no Prato 1.
+7. **Documentar:** este README, diagrama, capturas de tela, vídeo e slides.
+
+## 4. Como executar
 
 ```bash
 pip install -r requirements.txt
@@ -75,7 +91,7 @@ export GEMINI_API_KEY="sua-chave"
 
 A chave fica só na memória da sessão e **não deve ser enviada ao repositório**. Sem chave, a análise ao vivo funciona em modo simulado e avisa isso na tela. O código escolhe sozinho um modelo disponível para a chave (pode ser fixado com `RAIOX_MODELO_GEMINI`) e mostra mensagens claras em caso de chave inválida, limite de uso ou falta de conexão.
 
-## 4. Estrutura
+## 5. Estrutura
 
 ```
 app.py          painel Streamlit (gerente, câmera ao vivo e galeria)
@@ -84,18 +100,18 @@ custos.py       premissas de preço/custo e cálculo de margem
 simulador.py    gera um dia de almoço simulado
 testar_ia.py    testa a chave e reanalisa a galeria
 data/           pratos_simulados.csv, analises_fotos.json, fotos/ e fontes_imagens.md
-docs/           capturas de tela
+docs/           capturas de tela, diagrama (fluxo.png) e slides (apresentacao.pdf)
 ```
 
 Para usar dados reais, salve um CSV com as mesmas colunas de `data/pratos_simulados.csv` em `data/pratos.csv`. O painel passa a usá-lo automaticamente.
 
-## 5. Impacto (estimativa ilustrativa)
+## 6. Impacto (estimativa ilustrativa)
 
 Na simulação de um dia (600 clientes, faturamento de cerca de R$ 39,7 mil), **112 pratos (19%)** ficaram abaixo de 68% de margem por conter muita carne. Se esses pratos tivessem a margem média dos demais, o dia renderia cerca de **R$ 1.000 a mais**, algo como **R$ 23 mil por mês** em 22 dias úteis.
 
 O objetivo não é cobrar mais nem restringir o cliente, e sim **dar visibilidade** para decisões que hoje são no olho: a ordem e o tamanho das cubas, a velocidade de reposição da churrasqueira, o mix do cardápio de cada dia e o reforço de equipe no pico. Esses números dependem das premissas de custo abaixo e devem ser recalculados com os custos reais da casa.
 
-## 6. Premissas e limitações
+## 7. Premissas e limitações
 
 - **Os dados da Visão do gerente são simulados**, gerados com os números que a diretoria informou: ~600 clientes por dia, serviço das 11:30 às 15:30, pico das 12:10 às 13:20, fila da churrasqueira chegando a ~4 min no pico. O vídeo de 1h30 da operação não estava disponível durante o desenvolvimento.
 - **Os custos por kg são estimativas da equipe**, não dados do restaurante (carne R$ 58, guarnição R$ 11, salada R$ 14, outros R$ 22). Podem ser editados na barra lateral. O preço de R$ 119/kg foi informado pela diretoria.
@@ -103,7 +119,7 @@ O objetivo não é cobrar mais nem restringir o cliente, e sim **dar visibilidad
 - **A estimativa visual do mix é aproximada.** Mede proporção na imagem, não gramas exatas. Serve para tendências (margem por hora, por dia, por cardápio), não para auditar um prato individual.
 - **Privacidade:** a câmera fica apontada para a balança e registra o prato, não o rosto do cliente.
 
-## 7. Roadmap
+## 8. Roadmap
 
 1. **Câmera fixa na balança**, com o peso lido automaticamente e ligado ao número da comanda (código de barras) já usado no sistema JS SoftCom.
 2. **Tempo por estação com dados reais**, a partir das câmeras Intelbras já instaladas (contagem de pessoas na fila da churrasqueira e na entrada).
